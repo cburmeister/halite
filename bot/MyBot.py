@@ -26,15 +26,15 @@ def get_command_for_undocked_ship(game_map, ship):
         if planet.is_owned():
             continue
 
-        # Skip this planet if there's already a ship heading its way
-        if planet in destination_by_ship_id.values():
-            continue
-
         # Dock the ship at the planet if possible
         if ship.can_dock(planet):
             command = ship.dock(planet)
             destination_by_ship_id.pop(ship.id, None)
             return command
+
+        # Skip this planet if there's already a ship heading its way
+        if planet in destination_by_ship_id.values():
+            continue
 
         # Otherwise head towards it
         command = ship.navigate(
