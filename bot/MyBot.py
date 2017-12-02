@@ -7,6 +7,7 @@ logging.info('Starting my Settler bot!')
 
 destination_by_ship_id = {}
 
+
 while True:
     game_map = game.update_map()
     command_queue = []
@@ -14,7 +15,12 @@ while True:
         if ship.docking_status != ship.DockingStatus.UNDOCKED:
             continue
 
-        for planet in game_map.all_planets():
+        planets = game_map.all_planets()
+        planets = sorted(
+            planets,
+            key=lambda x: x.calculate_distance_between(ship)
+        )
+        for planet in planets:
             if planet.is_owned():
                 continue
 
