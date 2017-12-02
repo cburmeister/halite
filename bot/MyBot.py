@@ -19,18 +19,17 @@ def get_command_for_undocked_ship(game_map, ship):
         key=lambda x: x.calculate_distance_between(ship)
     )
 
-    # Iterate over the planets with the goal of sending a ship to one
-    for planet in planets:
-
-        # Skip this planet if it's already owned
-        if planet.is_owned():
-            continue
+    # First try to dock to any unowned planets
+    for planet in [x for x in planets if not x.is_owned()]:
 
         # Dock the ship at the planet if possible
         if ship.can_dock(planet):
             command = ship.dock(planet)
             destination_by_ship_id.pop(ship.id, None)
             return command
+
+    # Next try to navigate to any unowned planets
+    for planet in [x for x in planets if not x.is_owned()]:
 
         # Skip this planet if there's already a ship heading its way
         if planet in destination_by_ship_id.values():
