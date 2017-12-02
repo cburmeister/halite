@@ -39,12 +39,44 @@ def get_command_for_undocked_ship(game_map, ship):
         command = ship.navigate(
             ship.closest_point_to(planet),
             game_map,
-            speed=int(hlt.constants.MAX_SPEED),
-            ignore_ships=True
+            speed=int(hlt.constants.MAX_SPEED)
         )
         if command:
             destination_by_ship_id[ship.id] = planet
             return command
+
+    # Next ensure we've filled every docking spot on planets we own
+    for planet in [x for x in planets if x.is_owned()]:
+
+        # Skip this planet if it isn't ours
+        if planet.owner.id != game_map.my_id:
+            continue
+
+        # If there are available docking spots
+        docked_ships = planet.all_docked_ships()
+        docking_spots = planet.num_docking_spots
+        if len(docked_ships) < docking_spots:
+
+            # Dock the ship at the planet if possible
+            if ship.can_dock(planet):
+                command = ship.dock(planet)
+                destination_by_ship_id.pop(ship.id, None)
+                return command
+
+            # Skip this planet if there's already a ship heading its way
+            if planet in destination_by_ship_id.values():
+                continue
+
+            # Head towards it
+            command = ship.navigate(
+                ship.closest_point_to(planet),
+                game_map,
+                speed=int(hlt.constants.MAX_SPEED),
+                ignore_ships=True
+            )
+            if command:
+                destination_by_ship_id[ship.id] = planet
+                return command
 
     # Next try to swarm an enemy owned planet
     for planet in [x for x in planets if x.is_owned()]:
