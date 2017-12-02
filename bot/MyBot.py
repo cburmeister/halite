@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 
 import hlt
@@ -11,11 +12,14 @@ destination_by_ship_id = {}
 while True:
     game_map = game.update_map()
     command_queue = []
-    for ship in game_map.get_me().all_ships():
 
-        # Skip this ship if it's not undocked
-        if ship.docking_status != ship.DockingStatus.UNDOCKED:
-            continue
+    # Organize ships by docking status
+    ships_by_docking_status = defaultdict(list)
+    for ship in game_map.get_me().all_ships():
+        ships_by_docking_status[ship.docking_status].append(ship)
+
+    # Loop over every undocked ship and try to give them something to do
+    for ship in ships_by_docking_status.get(ship.DockingStatus.UNDOCKED, []):
 
         # Get all of the planets and sort them by distance from the ship
         planets = game_map.all_planets()
