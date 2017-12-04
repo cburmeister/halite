@@ -43,10 +43,7 @@ def get_command_for_undocked_ship(game_map, ship):
 
     # Get all of the planets and sort them by distance from the ship
     planets = game_map.all_planets()
-    planets = sorted(
-        planets,
-        key=lambda x: x.calculate_distance_between(ship)
-    )
+    planets.sort(key=lambda x: x.calculate_distance_between(ship))
 
     # First try to dock to any unowned planets
     for planet in get_unowned_planets(planets):
