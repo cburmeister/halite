@@ -1,4 +1,5 @@
 import logging
+import signal
 
 import hlt
 
@@ -126,15 +127,30 @@ def get_command_for_undocked_ship(game_map, ship):
                 return command
 
 
+def _handler_timeout(signum, frame):
+    raise TimeoutError
+
+
 while True:
     command_queue = []
     game_map = game.update_map()
     ships = game_map.get_me().all_ships()
 
-    # Loop over every undocked ship and try to give them something to do
-    for ship in get_undocked_ships(ships):
-        command = get_command_for_undocked_ship(game_map, ship)
-        if command:
-            command_queue.append(command)
+    # Prevent a timeout from happening after 1.8 seconds
+    signal.signal(signal.SIGALRM, _handler_timeout)
+    signal.setitimer(signal.ITIMER_REAL, 1.8)
+    try:
+
+        # Loop over every undocked ship and try to give them something to do
+        for ship in get_undocked_ships(ships):
+            command = get_command_for_undocked_ship(game_map, ship)
+            if command:
+                command_queue.append(command)
+
+    except TimeoutError:
+        pass
+
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
 
     game.send_command_queue(command_queue)
