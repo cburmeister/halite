@@ -79,9 +79,7 @@ def get_command_for_undocked_ship(game_map, ship):
             continue
 
         # If there are available docking spots
-        docked_ships = planet.all_docked_ships()
-        docking_spots = planet.num_docking_spots
-        if len(docked_ships) < docking_spots:
+        if not planet.is_full():
 
             # Dock the ship at the planet if possible
             if ship.can_dock(planet):
